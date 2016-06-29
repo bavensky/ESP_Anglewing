@@ -11,10 +11,11 @@ MPU6050 accelgyro;
 
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
-float f_angle, pitchAcc, gyroXrate;
+float p_angle, r_angle, rollAcc, pitchAcc, gyroXrate;
 float P_CompCoeff = 0.95;
-int timer = 10;
+unsigned long time_prev;
 
+void readMPU();
 void wing_swing();
 
 void setup() {
@@ -25,23 +26,69 @@ void setup() {
 
   L_wing.attach(14);
   R_wing.attach(12);
+  delay(1000);
 }
-unsigned long time_prev;
+
 void loop() {
+  readMPU();
+
+  L_wing.write(90); //center
+  R_wing.write(90); //center
+
+  //  L_wing.write(130); //forward
+  //  R_wing.write(50); //forward
+  //  L_wing.write(50); //backward
+  //  R_wing.write(130); //backward
+
+  while (p_angle > 20) {
+    readMPU();
+    L_wing.write(130);
+    R_wing.write(50);
+    delay(250);
+    L_wing.write(50);
+    R_wing.write(130);
+    delay(250);
+  }
+  while (r_angle < -110) {
+    readMPU();
+    L_wing.write(130);
+    R_wing.write(90);
+    delay(250);
+    L_wing.write(50);
+    R_wing.write(90);
+    delay(250);
+  }
+  while (r_angle > -70) {
+    readMPU();
+    L_wing.write(90);
+    R_wing.write(50);
+    delay(250);
+    L_wing.write(90);
+    R_wing.write(130);
+    delay(250);
+  }
+}
+
+void readMPU()  {
   unsigned long time_now = millis();
   if (time_now - time_prev >= 10)
   {
     time_prev = time_now;
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    f_angle += (((float)gz / 16.4f) * (-0.01f));
-    float pitchAcc = atan2(ax, -ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
-    f_angle = P_CompCoeff * f_angle + (1.0f - P_CompCoeff) * pitchAcc;
-    //    Serial.print("  f_angle = ");
-    //    Serial.println(f_angle);
+
+    p_angle += (((float)gz / 16.4f) * (-0.01f));
+    float rollAcc = atan2(ax, -ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
+    p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * rollAcc;
+
+    r_angle += ((gx / 16.4f) * (0.01f));
+    float pitchAcc = atan2(ay, az) * RAD_TO_DEG;
+    r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * pitchAcc;
+
+    Serial.print(r_angle);
+    Serial.print("\t");
+    Serial.println(p_angle);
   }
-
 }
-
 void wing_swing()  {
   L_wing.write(0);
   R_wing.write(0);
