@@ -1,7 +1,7 @@
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include "Wire.h"
-#include <Servo.h> 
+#include <Servo.h>
 
 Servo L_wing;
 Servo R_wing;
@@ -9,18 +9,18 @@ Servo R_wing;
 MPU6050 accelgyro;
 #define OUTPUT_READABLE_ACCELGYRO
 
-
-
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 float f_angle, pitchAcc, gyroXrate;
 float P_CompCoeff = 0.95;
 int timer = 10;
 
+void wing_swing();
+
 void setup() {
   Wire.begin();
   Serial.begin(38400);
-  
+
   accelgyro.initialize();
 
   L_wing.attach(14);
@@ -39,6 +39,19 @@ void loop() {
     //    Serial.print("  f_angle = ");
     //    Serial.println(f_angle);
   }
-  L_wing.write(0); 
-  R_wing.write(0); 
+
 }
+
+void wing_swing()  {
+  L_wing.write(0);
+  R_wing.write(0);
+}
+void wing_Lswing()  {
+  L_wing.write(0);
+  R_wing.write(0);
+}
+void wing_Rswing()  {
+  L_wing.write(0);
+  R_wing.write(0);
+}
+
