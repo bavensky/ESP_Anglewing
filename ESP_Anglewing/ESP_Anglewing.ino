@@ -27,6 +27,8 @@ void setup() {
   L_wing.attach(14);
   R_wing.attach(12);
   delay(1000);
+    readMPU();
+
 }
 
 void loop() {
@@ -40,32 +42,32 @@ void loop() {
   //  L_wing.write(50); //backward
   //  R_wing.write(130); //backward
 
-  while (p_angle > 20) {
+  while (p_angle > 20 && p_angle < 30 ) {
     readMPU();
     L_wing.write(130);
     R_wing.write(50);
-    delay(250);
+    delay(200);
     L_wing.write(50);
     R_wing.write(130);
-    delay(250);
+    delay(200);
   }
-  while (r_angle < -110) {
+  while (r_angle > 100 && r_angle < 110) {
     readMPU();
     L_wing.write(130);
     R_wing.write(90);
-    delay(250);
+    delay(200);
     L_wing.write(50);
     R_wing.write(90);
-    delay(250);
+    delay(200);
   }
-  while (r_angle > -70) {
+  while (r_angle > 40 && r_angle < 50) {
     readMPU();
     L_wing.write(90);
     R_wing.write(50);
-    delay(250);
+    delay(200);
     L_wing.write(90);
     R_wing.write(130);
-    delay(250);
+    delay(200);
   }
 }
 
@@ -77,16 +79,16 @@ void readMPU()  {
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
     p_angle += (((float)gz / 16.4f) * (-0.01f));
-    float rollAcc = atan2(ax, -ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
+    float rollAcc = atan2(ax, ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
     p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * rollAcc;
 
     r_angle += ((gx / 16.4f) * (0.01f));
     float pitchAcc = atan2(ay, az) * RAD_TO_DEG;
     r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * pitchAcc;
 
-    Serial.print(r_angle);
-    Serial.print("\t");
-    Serial.println(p_angle);
+//    Serial.print(r_angle);
+//    Serial.print("\t");
+//    Serial.println(p_angle);
   }
 }
 void wing_swing()  {
