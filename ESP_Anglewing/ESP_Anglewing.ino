@@ -79,12 +79,12 @@ void readMPU()  {
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
     p_angle += (((float)gz / 16.4f) * (-0.01f));
-    float rollAcc = atan2(ax, ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
-    p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * rollAcc;
+    float pitchAcc = atan2(ax, ay) * RAD_TO_DEG; //(float)22/7; //RAD_TO_DEG
+    p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * pitchAcc;
 
     r_angle += ((gx / 16.4f) * (0.01f));
-    float pitchAcc = atan2(ay, az) * RAD_TO_DEG;
-    r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * pitchAcc;
+    float rollAcc = atan2(ay, az) * RAD_TO_DEG;
+    r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * rollAcc;
 
 //    Serial.print(r_angle);
 //    Serial.print("\t");
