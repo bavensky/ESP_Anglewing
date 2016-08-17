@@ -35,6 +35,7 @@ void wing_swing();
 void mode1();
 void mode2();
 void mode3();
+void mode4();
 
 void setup() {
   Wire.begin();
@@ -49,7 +50,11 @@ void setup() {
 
 void loop() {
   readMPU();
-  mode2();
+//  mode1();
+//  mode2();
+//  mode3();
+  mode4();
+
   //  if(digitalRead(BT) == 0 )  {
   //    delay(200);
   //    modeCount++;
@@ -59,7 +64,7 @@ void loop() {
   //  if(modeCount == 2)  mode2();
   //  if(modeCount == 3)  mode3();
   //  if(modeCount == 4)  modeCount = 0;
-  
+
   // moveing wing
   //  L_wing.write(90); //wing left center
   //  R_wing.write(90); //wing right center
@@ -136,54 +141,40 @@ void readMPU()  {
     //    gy -= gy_diff;
     //    gz -= gz_diff;
 
-    //    for(int i=0; i<=100; i++) {
-    //      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    //      sum_x += ax;
-    //      delay(1);
-    //      Serial.println(sum_x);
-    //    }
-    //    for(int i=0; i<=100; i++) {
-    //      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    //      sum_y += ay;
-    //      delay(1);
-    //    }
     //
     //    ax = sum_x/100;
     //    ay = sum_y/100;
 
     //    p_angle += (((float)gz / 16.4f)) * (-0.01f);
     //    p_angle += ((gz / 16.4f)) * (-0.01f);
-
-    p_angle += ((gz / 16.4f)) * (0.01f);    // gz จุดที่เปลี่ยนตามแกนหมุน
-    //(float)22/7; //RAD_TO_DEG แปลงเรเดียนเป็นองศา
-    float pitchAcc = atan2(-ay, -ax) * RAD_TO_DEG; // atan2(1, 2)  1 คือจุดหมุน, 2 คือจุดตาม
-    p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * pitchAcc;
-
-    r_angle += ((-gy / 16.4f)) * (0.01f);
-    float rollAcc = atan2(az, -ax) * RAD_TO_DEG;
-    r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * rollAcc;
-
     //    Serial.printf("Read IMU %d %d %d\n", ax, ay, gz);
 
-    Serial.println(p_angle);
-    //    Serial.print("\t");
-    //    Serial.println(r_angle);
+
+    /*  default set mpu
+        p_angle += ((gz / 16.4f)) * (0.01f);    // gz จุดที่เปลี่ยนตามแกนหมุน
+        //(float)22/7; //RAD_TO_DEG แปลงเรเดียนเป็นองศา
+        float pitchAcc = atan2(-ay, -ax) * RAD_TO_DEG; // atan2(1, 2)  1 คือจุดหมุน, 2 คือจุดตาม
+        p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * pitchAcc;
+
+        r_angle += ((-gy / 16.4f)) * (0.01f);
+        float rollAcc = atan2(az, -ax) * RAD_TO_DEG;
+        r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * rollAcc;
+    */
+
+    p_angle += ((gy / 16.4f)) * (0.01f);
+    float pitchAcc = atan2(-ay, -az) * RAD_TO_DEG;
+    p_angle = P_CompCoeff * p_angle + (1.0f - P_CompCoeff) * pitchAcc;
+
+    r_angle += ((gx / 16.4f)) * (0.01f);
+    float rollAcc = atan2(ax, -az) * RAD_TO_DEG;
+    r_angle = P_CompCoeff * r_angle + (1.0f - P_CompCoeff) * rollAcc;
+
+    Serial.print(p_angle);
+    Serial.print("\t");
+    Serial.println(r_angle);
 
   }
 }
-
-//void wing_swing()  {
-//  L_wing.write(0);
-//  R_wing.write(0);
-//}
-//void wing_Lswing()  {
-//  L_wing.write(0);
-//  R_wing.write(0);
-//}
-//void wing_Rswing()  {
-//  L_wing.write(0);
-//  R_wing.write(0);
-//}
 
 void mode1()  {
   unsigned long timenow = millis();
@@ -211,10 +202,11 @@ void mode1()  {
 void mode2()  {
   unsigned long timenow = millis();
   readMPU();
-  if (p_angle <= -5 && p_angle >= -20)  {
+
+  if (p_angle <= 0 && p_angle >= -15)  {
     if (timenow - previousMode2 >= 250) {
-      L_wing.write(150);
-      R_wing.write(30);
+      L_wing.write(50);
+      R_wing.write(130);
     }
     if (timenow - previousMode2 >= 500) {
       L_wing.write(90);
@@ -229,6 +221,7 @@ void mode2()  {
 void mode3()  {
   unsigned long timenow = millis();
   readMPU();
+
   if (p_angle <= -31 && p_angle >= -40)  {
     if (timenow - previousMode3 >= 500) {
       L_wing.write(150);
@@ -239,5 +232,20 @@ void mode3()  {
     }
   }  else {
     previousMode3 = timenow;
+  }
+}
+
+void mode4()  {
+  readMPU();
+
+  if (r_angle <= -10 && p_angle >= -20)  {
+    R_wing.write(50);
+  } else {
+    R_wing.write(90);
+  }
+  if (r_angle >= 10 && p_angle <= 20)  {
+    L_wing.write(130);
+  } else {
+    L_wing.write(90);
   }
 }
